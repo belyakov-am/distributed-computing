@@ -4,6 +4,7 @@
 
 ## Deploy
 `cp .env.example .env`
+
 `docker-compose up --build`
 
 ## Project description
