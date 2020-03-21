@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 djangorestframework = "~=3.10.0"
+djangorestframework-simplejwt = "*"
 psycopg2-binary = "==2.8.4"
 django = "~=2.2.0"
 uuid = "*"

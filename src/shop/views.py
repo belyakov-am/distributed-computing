@@ -1,3 +1,4 @@
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.renderers import AdminRenderer
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -14,8 +15,10 @@ class ProductView(APIView):
     """
     renderer_classes = [AdminRenderer]
     queryset = ''
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
-    def get(self, request):
+    @staticmethod
+    def get(request):
         """
         Return product by given id
         :param request: id
@@ -31,7 +34,8 @@ class ProductView(APIView):
 
         return Response(serializer.data, status=HTTP_200_OK)
 
-    def post(self, request):
+    @staticmethod
+    def post(request):
         """
         Create new product by given name and category
         :param request: name, category
@@ -47,9 +51,10 @@ class ProductView(APIView):
 
         product_id = Product.insert(name, category)
 
-        return Response(product_id, status=HTTP_200_OK)
+        return Response({'uuid': str(product_id)}, status=HTTP_200_OK)
 
-    def put(self, request):
+    @staticmethod
+    def put(request):
         """
         Update existed product by it's id
         :param request: id, name, category
@@ -76,7 +81,8 @@ class ProductView(APIView):
         product.save()
         return Response(status=HTTP_200_OK)
 
-    def delete(self, request):
+    @staticmethod
+    def delete(request):
         """
         Delete product by given id
         :param request: id
