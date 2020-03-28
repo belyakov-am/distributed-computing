@@ -13,7 +13,7 @@ class ProductView(APIView):
     """
     View to product
     """
-    renderer_classes = [AdminRenderer]
+    # renderer_classes = [AdminRenderer]
     queryset = ''
 
     def get(self, request):
@@ -26,7 +26,7 @@ class ProductView(APIView):
         try:
             product = Product.objects.get(id=id)
         except (ValueError, Product.DoesNotExist):
-            return Response("no product with given id", status=HTTP_404_NOT_FOUND)
+            return Response(data={'error': 'no product with given id'}, status=HTTP_404_NOT_FOUND)
 
         serializer = ProductSerializer(product, many=False)
 
@@ -40,11 +40,11 @@ class ProductView(APIView):
         """
         name = request.data.get('name', '')
         if name == '':
-            return Response('name field must be set', status=HTTP_400_BAD_REQUEST)
+            return Response(data={'error': 'name field must be set'}, status=HTTP_400_BAD_REQUEST)
 
         category = request.data.get('category', '')
         if category == '':
-            return Response('category field must be set', status=HTTP_400_BAD_REQUEST)
+            return Response(data={'error': 'category field must be set'}, status=HTTP_400_BAD_REQUEST)
 
         product_id = Product.insert(name, category)
 
@@ -60,13 +60,13 @@ class ProductView(APIView):
         try:
             product = Product.objects.get(id=id)
         except (ValueError, Product.DoesNotExist):
-            return Response("no product with given id", status=HTTP_404_NOT_FOUND)
+            return Response(data={'error': 'no product with given id'}, status=HTTP_404_NOT_FOUND)
 
         name = request.data.get('name', '')
         category = request.data.get('category', '')
 
         if name == '' and category == '':
-            return Response('name or category field must be set', status=HTTP_400_BAD_REQUEST)
+            return Response(data={'error': 'name or category field must be set'}, status=HTTP_400_BAD_REQUEST)
 
         if name != '':
             product.name = name
@@ -75,7 +75,7 @@ class ProductView(APIView):
             product.category = category
 
         product.save()
-        return Response(status=HTTP_200_OK)
+        return Response(data={'id': id}, status=HTTP_200_OK)
 
     def delete(self, request):
         """
@@ -87,10 +87,10 @@ class ProductView(APIView):
         try:
             product = Product.objects.get(id=id)
         except (ValueError, Product.DoesNotExist):
-            return Response("no product with given id", status=HTTP_404_NOT_FOUND)
+            return Response(data={'error': 'no product with given id'}, status=HTTP_404_NOT_FOUND)
 
         product.remove(id)
-        return Response(status=HTTP_200_OK)
+        return Response(data={'status': 'success'}, status=HTTP_200_OK)
 
 
 class ProductsPagination(PageNumberPagination):
@@ -104,7 +104,7 @@ class ListProductView(ListAPIView):
     """
     List view to products
     """
-    renderer_classes = [AdminRenderer]
+    # renderer_classes = [AdminRenderer]
     queryset = Product.objects.all()
     pagination_class = ProductsPagination
     serializer_class = ProductSerializer
