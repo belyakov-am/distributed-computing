@@ -1,3 +1,4 @@
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.renderers import AdminRenderer
 from rest_framework.views import APIView
@@ -98,33 +99,42 @@ class ProductView(APIView):
         return Response(status=HTTP_200_OK)
 
 
+class ProductsPagination(PageNumberPagination):
+    page_size = 5
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+    ordering = 'name'
+
+
 class ListProductView(ListAPIView):
     """
     List view to products
     """
     renderer_classes = [AdminRenderer]
-    queryset = ''
+    queryset = Product.objects.all()
+    pagination_class = ProductsPagination
+    serializer_class = ProductSerializer
 
-    def get(self, request, *args, **kwargs):
-        """
-        Returns list of objects with given name or category
-        :param request: name or category
-        :param args:
-        :param kwargs:
-        :return: OK status
-        """
-        name = request.query_params.get('name', '')
-        category = request.query_params.get('category', '')
-
-        if name != '' and category != '':
-            objects = Product.objects.filter(name=name, category=category)
-        elif name != '':
-            objects = Product.objects.filter(name=name)
-        elif category != '':
-            objects = Product.objects.filter(category=category)
-        else:
-            objects = Product.objects.all()
-
-        serializer = ProductSerializer(objects, many=True)
-
-        return Response(serializer.data, status=HTTP_200_OK)
+    # def get(self, request, *args, **kwargs):
+    #     """
+    #     Returns list of objects with given name or category
+    #     :param request: name or category
+    #     :param args:
+    #     :param kwargs:
+    #     :return: OK status
+    #     """
+    #     name = request.query_params.get('name', '')
+    #     category = request.query_params.get('category', '')
+    #
+    #     if name != '' and category != '':
+    #         objects = Product.objects.filter(name=name, category=category)
+    #     elif name != '':
+    #         objects = Product.objects.filter(name=name)
+    #     elif category != '':
+    #         objects = Product.objects.filter(category=category)
+    #     else:
+    #         objects = Product.objects.all()
+    #
+    #     serializer = ProductSerializer(objects, many=True)
+    #
+    #     return Response(serializer.data, status=HTTP_200_OK)
