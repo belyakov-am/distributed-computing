@@ -38,17 +38,17 @@ class ProductView(APIView):
         :param request: name, category
         :return: OK status
         """
-        name = request.query_params.get('name', '')
+        name = request.data.get('name', '')
         if name == '':
             return Response('name field must be set', status=HTTP_400_BAD_REQUEST)
 
-        category = request.query_params.get('category', '')
+        category = request.data.get('category', '')
         if category == '':
             return Response('category field must be set', status=HTTP_400_BAD_REQUEST)
 
         product_id = Product.insert(name, category)
 
-        return Response(product_id, status=HTTP_200_OK)
+        return Response(data={'id': product_id}, status=HTTP_200_OK)
 
     def put(self, request):
         """
@@ -56,14 +56,14 @@ class ProductView(APIView):
         :param request: id, name, category
         :return: OK status
         """
-        id = request.query_params.get('id', '')
+        id = request.data.get('id', '')
         try:
             product = Product.objects.get(id=id)
         except (ValueError, Product.DoesNotExist):
             return Response("no product with given id", status=HTTP_404_NOT_FOUND)
 
-        name = request.query_params.get('name', '')
-        category = request.query_params.get('category', '')
+        name = request.data.get('name', '')
+        category = request.data.get('category', '')
 
         if name == '' and category == '':
             return Response('name or category field must be set', status=HTTP_400_BAD_REQUEST)
@@ -83,7 +83,7 @@ class ProductView(APIView):
         :param request: id
         :return: OK status
         """
-        id = request.query_params.get('id', '')
+        id = request.data.get('id', '')
         try:
             product = Product.objects.get(id=id)
         except (ValueError, Product.DoesNotExist):
@@ -94,7 +94,7 @@ class ProductView(APIView):
 
 
 class ProductsPagination(PageNumberPagination):
-    page_size = 5
+    page_size = 20
     page_size_query_param = 'page_size'
     max_page_size = 100
     ordering = 'name'
