@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.renderers import AdminRenderer
@@ -25,10 +26,10 @@ class ProductView(APIView):
         :param request: id
         :return: object, if found
         """
-        id = request.query_params.get('id', '')
+        product_id = request.query_params.get('id', '')
         try:
-            product = Product.objects.get(id=id)
-        except (ValueError, Product.DoesNotExist):
+            product = Product.objects.get(id=product_id)
+        except (ValueError, Product.DoesNotExist, ValidationError):
             return Response("no product with given id", status=HTTP_404_NOT_FOUND)
 
         serializer = ProductSerializer(product, many=False)
@@ -42,11 +43,11 @@ class ProductView(APIView):
         :param request: name, category
         :return: OK status
         """
-        name = request.query_params.get('name', '')
+        name = request.data.get('name', '')
         if name == '':
             return Response('name field must be set', status=HTTP_400_BAD_REQUEST)
 
-        category = request.query_params.get('category', '')
+        category = request.data.get('category', '')
         if category == '':
             return Response('category field must be set', status=HTTP_400_BAD_REQUEST)
 
@@ -61,14 +62,14 @@ class ProductView(APIView):
         :param request: id, name, category
         :return: OK status
         """
-        id = request.query_params.get('id', '')
+        product_id = request.data.get('id', '')
         try:
-            product = Product.objects.get(id=id)
+            product = Product.objects.get(id=product_id)
         except (ValueError, Product.DoesNotExist):
             return Response("no product with given id", status=HTTP_404_NOT_FOUND)
 
-        name = request.query_params.get('name', '')
-        category = request.query_params.get('category', '')
+        name = request.data.get('name', '')
+        category = request.data.get('category', '')
 
         if name == '' and category == '':
             return Response('name or category field must be set', status=HTTP_400_BAD_REQUEST)
@@ -89,13 +90,13 @@ class ProductView(APIView):
         :param request: id
         :return: OK status
         """
-        id = request.query_params.get('id', '')
+        product_id = request.data.get('id', '')
         try:
-            product = Product.objects.get(id=id)
+            product = Product.objects.get(id=product_id)
         except (ValueError, Product.DoesNotExist):
             return Response("no product with given id", status=HTTP_404_NOT_FOUND)
 
-        product.remove(id)
+        product.remove(product_id)
         return Response(status=HTTP_200_OK)
 
 

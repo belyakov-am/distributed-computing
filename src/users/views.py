@@ -16,7 +16,7 @@ def register_user(request, email, password):
 
     exists = User.objects.filter(email=email).exists()
     if exists:
-        return Response({'error', 'user already registered'}, email)
+        return Response({'error', 'bad request'}, status=status.HTTP_400_BAD_REQUEST)
 
     user = User()
     user.username = email
