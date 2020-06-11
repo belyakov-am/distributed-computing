@@ -2,12 +2,33 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import User
 from django.db import transaction
 from rest_framework import generics, status, permissions
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenVerifyView
+from rest_framework_simplejwt.exceptions import TokenError
 
-from users.models import Profile
-from users.serializers import RegisterSerializer
+from .models import Profile
+from .serializers import RegisterSerializer
+from .util import get_notification_queue, make_confirmation_message, message_queue_provider
+
+
+@api_view(["GET"])
+def confirm_registration(request):
+    token = request.query_params.get("token")
+
+    try:
+        payload = RefreshToken(token=token,).payload
+    except TokenError:
+        return Response(data={"message": "Token is invalid or expired."}, status=status.HTTP_400_BAD_REQUEST)
+
+    id_ = int(payload["id"])
+
+    user = User.objects.get(id=id_)
+    user.is_active = True
+    user.save()
+
+    return Response(data={"message": "Email is verified, registration completed."}, status=status.HTTP_200_OK)
 
 
 def register_user(request, email, password):
@@ -32,7 +53,12 @@ def register_user(request, email, password):
     except Exception as ex:
         raise ex
 
-    return Response({'user_id': user.id, 'email': email}, status=status.HTTP_200_OK)
+    queue = get_notification_queue("email")
+    body = make_confirmation_message(confirm_registration, RefreshToken.for_user(user))
+
+    message_queue_provider.send_confirmation(queue, email, "Registration confirmation", body)
+
+    return Response({'user_id': user.id, 'email': email, "msg": "Check email"}, status=status.HTTP_200_OK)
 
 
 class Register(generics.CreateAPIView):

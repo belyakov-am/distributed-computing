@@ -35,6 +35,8 @@ services:
       - DEBUG=0
     depends_on:
       - postgresql
+      - mq
+      - notifications
 
   postgresql:
     image: postgres:11.2-alpine
@@ -44,6 +46,24 @@ services:
       - POSTGRES_USER=${SQL_USER}
       - POSTGRES_PASSWORD=${SQL_PASSWORD}
       - POSTGRES_DB=${SQL_DATABASE}
+
+  mq:
+    image: rabbitmq:management-alpine
+    env_file:
+      - .env
+    ports:
+      - $MQ_PORT:$MQ_PORT
+      - $MQ_HTTP_PORT:$MQ_HTTP_PORT
+
+  notifications:
+    build: ./src/notifications
+    command: sh -c "./notifications"
+    ports:
+    - $NOTIFICATIONS_PORT:$NOTIFICATIONS_PORT
+    env_file:
+      - .env
+    depends_on:
+      - mq
 
 volumes:
   postgres_data:
