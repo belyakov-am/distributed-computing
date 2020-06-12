@@ -1,12 +1,14 @@
+from django.core.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.renderers import AdminRenderer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_200_OK, HTTP_400_BAD_REQUEST
 from rest_framework.generics import ListAPIView
 
-from shop.models import Product
-from shop.serializers import ProductSerializer
+from .models import Product
+from .serializers import ProductSerializer
 
 
 class ProductView(APIView):
@@ -15,24 +17,27 @@ class ProductView(APIView):
     """
     # renderer_classes = [AdminRenderer]
     queryset = ''
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
-    def get(self, request):
+    @staticmethod
+    def get(request):
         """
         Return product by given id
         :param request: id
         :return: object, if found
         """
-        id = request.query_params.get('id', '')
+        product_id = request.query_params.get('id', '')
         try:
-            product = Product.objects.get(id=id)
-        except (ValueError, Product.DoesNotExist):
-            return Response(data={'error': 'no product with given id'}, status=HTTP_404_NOT_FOUND)
+            product = Product.objects.get(id=product_id)
+        except (ValueError, Product.DoesNotExist, ValidationError):
+            return Response("no product with given id", status=HTTP_404_NOT_FOUND)
 
         serializer = ProductSerializer(product, many=False)
 
         return Response(serializer.data, status=HTTP_200_OK)
 
-    def post(self, request):
+    @staticmethod
+    def post(request):
         """
         Create new product by given name and category
         :param request: name, category
@@ -48,17 +53,19 @@ class ProductView(APIView):
 
         product_id = Product.insert(name, category)
 
-        return Response(data={'id': product_id}, status=HTTP_200_OK)
+        return Response({'uuid': str(product_id)}, status=HTTP_200_OK)
 
-    def put(self, request):
+    @staticmethod
+    def put(request):
         """
         Update existed product by it's id
         :param request: id, name, category
         :return: OK status
         """
-        id = request.data.get('id', '')
+        product_id = request.data.get('id', '')
+
         try:
-            product = Product.objects.get(id=id)
+            product = Product.objects.get(id=product_id)
         except (ValueError, Product.DoesNotExist):
             return Response(data={'error': 'no product with given id'}, status=HTTP_404_NOT_FOUND)
 
@@ -77,24 +84,26 @@ class ProductView(APIView):
         product.save()
         return Response(data={'id': id}, status=HTTP_200_OK)
 
-    def delete(self, request):
+    @staticmethod
+    def delete(request):
         """
         Delete product by given id
         :param request: id
         :return: OK status
         """
-        id = request.data.get('id', '')
+        product_id = request.data.get('id', '')
+
         try:
-            product = Product.objects.get(id=id)
+            product = Product.objects.get(id=product_id)
         except (ValueError, Product.DoesNotExist):
             return Response(data={'error': 'no product with given id'}, status=HTTP_404_NOT_FOUND)
 
-        product.remove(id)
-        return Response(data={'status': 'success'}, status=HTTP_200_OK)
+        product.remove(product_id)
+        return Response(status=HTTP_200_OK)
 
 
 class ProductsPagination(PageNumberPagination):
-    page_size = 20
+    page_size = 5
     page_size_query_param = 'page_size'
     max_page_size = 100
     ordering = 'name'
@@ -104,7 +113,7 @@ class ListProductView(ListAPIView):
     """
     List view to products
     """
-    # renderer_classes = [AdminRenderer]
+    renderer_classes = [AdminRenderer]
     queryset = Product.objects.all()
     pagination_class = ProductsPagination
     serializer_class = ProductSerializer

@@ -1,27 +1,42 @@
 version: '3.7'
 
 services:
-  django:
-    build: .
+  backend:
+    build: ./src/backend
     command: >
-      sh -c "python /usr/src/restapi/manage.py makemigrations &&
-             python /usr/src/restapi/manage.py migrate &&
-             python /usr/src/restapi/manage.py runserver 0.0.0.0:8000"
+      sh -c "python manage.py makemigrations &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:$BACKEND_PORT"
     volumes:
-      - ./src/:/usr/src/restapi/
+      - ./src/backend/:/usr/src/backend
     ports:
-      - 8000:8000
+      - $BACKEND_PORT:$BACKEND_PORT
+    env_file:
+      - .env
     environment:
       - DEBUG=0
-      - SECRET_KEY=${SECRET_KEY}
-      - SQL_ENGINE=${SQL_ENGINE}
-      - SQL_DATABASE=${SQL_DATABASE}
-      - SQL_USER=${SQL_USER}
-      - SQL_PASSWORD=${SQL_PASSWORD}
-      - SQL_HOST=${SQL_HOST}
-      - SQL_PORT=${SQL_PORT}
+    depends_on:
+      - auth
+      - postgresql
+
+  auth:
+    build: ./src/auth
+    command: >
+      sh -c "python manage.py makemigrations &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:$AUTH_PORT"
+    volumes:
+      - ./src/auth/:/usr/src/auth
+    ports:
+      - $AUTH_PORT:$AUTH_PORT
+    env_file:
+      - .env
+    environment:
+      - DEBUG=0
     depends_on:
       - postgresql
+      - mq
+      - notifications
 
   postgresql:
     image: postgres:11.2-alpine
@@ -31,6 +46,24 @@ services:
       - POSTGRES_USER=${SQL_USER}
       - POSTGRES_PASSWORD=${SQL_PASSWORD}
       - POSTGRES_DB=${SQL_DATABASE}
+
+  mq:
+    image: rabbitmq:management-alpine
+    env_file:
+      - .env
+    ports:
+      - 5673:$MQ_PORT
+      - $MQ_HTTP_PORT:$MQ_HTTP_PORT
+
+  notifications:
+    build: ./src/notifications
+    command: sh -c "./notifications"
+    ports:
+    - $NOTIFICATIONS_PORT:$NOTIFICATIONS_PORT
+    env_file:
+      - .env
+    depends_on:
+      - mq
 
 volumes:
   postgres_data:

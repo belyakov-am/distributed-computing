@@ -7,156 +7,328 @@
 	},
 	"item": [
 		{
-			"name": "Create product",
-			"request": {
-				"method": "POST",
-				"header": [],
-				"url": {
-					"raw": "0.0.0.0:8000/product?name=example name&category=example category",
-					"host": [
-						"0",
-						"0",
-						"0",
-						"0"
-					],
-					"port": "8000",
-					"path": [
-						"product"
-					],
-					"query": [
-						{
-							"key": "name",
-							"value": "example name"
+			"name": "auth",
+			"item": [
+				{
+					"name": "Authorize user",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"test8@gmail.com\",\n\t\"password\": \"securePASS1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
-						{
-							"key": "category",
-							"value": "example category"
-						}
-					]
-				},
-				"description": "Creates product by given id"
-			},
-			"response": []
-		},
-		{
-			"name": "Delete product",
-			"request": {
-				"method": "DELETE",
-				"header": [],
-				"url": {
-					"raw": "0.0.0.0:8000/product?id=1e018a3a-23fc-48b9-a682-ce115a4aa64a",
-					"host": [
-						"0",
-						"0",
-						"0",
-						"0"
-					],
-					"port": "8000",
-					"path": [
-						"product"
-					],
-					"query": [
-						{
-							"key": "id",
-							"value": "1e018a3a-23fc-48b9-a682-ce115a4aa64a"
-						}
-					]
-				},
-				"description": "Deletes product by given id"
-			},
-			"response": []
-		},
-		{
-			"name": "List of products",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "0.0.0.0:8000/products?name=example name&category=example category",
-					"host": [
-						"0",
-						"0",
-						"0",
-						"0"
-					],
-					"port": "8000",
-					"path": [
-						"products"
-					],
-					"query": [
-						{
-							"key": "name",
-							"value": "example name"
+						"url": {
+							"raw": "0.0.0.0:8000/auth/authorize",
+							"host": [
+								"0",
+								"0",
+								"0",
+								"0"
+							],
+							"port": "8000",
+							"path": [
+								"auth",
+								"authorize"
+							]
 						},
-						{
-							"key": "category",
-							"value": "example category"
-						}
-					]
+						"description": "Authorize user with email and password"
+					},
+					"response": []
 				},
-				"description": "Returns list of product by given name or/and category\nIf both of parameters are empty, returns list of all products"
-			},
-			"response": []
-		},
-		{
-			"name": "Get product",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "0.0.0.0:8000/product?id=example id",
-					"host": [
-						"0",
-						"0",
-						"0",
-						"0"
-					],
-					"port": "8000",
-					"path": [
-						"product"
-					],
-					"query": [
-						{
-							"key": "id",
-							"value": "example id"
-						}
-					]
-				},
-				"description": "Return product by given id"
-			},
-			"response": []
-		},
-		{
-			"name": "Update product",
-			"request": {
-				"method": "PUT",
-				"header": [],
-				"url": {
-					"raw": "0.0.0.0:8000/product?id=example id&name=example name",
-					"host": [
-						"0",
-						"0",
-						"0",
-						"0"
-					],
-					"port": "8000",
-					"path": [
-						"product"
-					],
-					"query": [
-						{
-							"key": "id",
-							"value": "example id"
+				{
+					"name": "Register user",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"test8@gmail.com\",\n\t\"password\": \"securePASS1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
-						{
-							"key": "name",
-							"value": "example name"
-						}
-					]
+						"url": {
+							"raw": "0.0.0.0:8000/auth/register",
+							"host": [
+								"0",
+								"0",
+								"0",
+								"0"
+							],
+							"port": "8000",
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register user"
+					},
+					"response": []
 				},
-				"description": "Updates product info (name or/and category) by given id"
-			},
-			"response": []
+				{
+					"name": "Refresh token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"refresh\": \"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTU4NDg2ODQxMiwianRpIjoiMmNiNGNlOWY1MDdhNDI4NTg4NmFhMTFlNGZjOGYxZjkiLCJ1c2VyX2lkIjoxfQ.HS5VSw4N81oojkwuMepRCsXdBjxQ0nEGNAVnlUXfT84\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "0.0.0.0:8000/auth/refresh",
+							"host": [
+								"0",
+								"0",
+								"0",
+								"0"
+							],
+							"port": "8000",
+							"path": [
+								"auth",
+								"refresh"
+							]
+						},
+						"description": "Refresh refresh_token"
+					},
+					"response": []
+				},
+				{
+					"name": "Validate",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"token\": \"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTU4NDg2ODQxMiwianRpIjoiMmNiNGNlOWY1MDdhNDI4NTg4NmFhMTFlNGZjOGYxZjkiLCJ1c2VyX2lkIjoxfQ.HS5VSw4N81oojkwuMepRCsXdBjxQ0nEGNAVnlUXfT84\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "0.0.0.0:8000/auth/validate",
+							"host": [
+								"0",
+								"0",
+								"0",
+								"0"
+							],
+							"port": "8000",
+							"path": [
+								"auth",
+								"validate"
+							]
+						},
+						"description": "Validate user token"
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "shop",
+			"item": [
+				{
+					"name": "Create product",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "0.0.0.0:8000/product?name=example name&category=example category",
+							"host": [
+								"0",
+								"0",
+								"0",
+								"0"
+							],
+							"port": "8000",
+							"path": [
+								"product"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "example name"
+								},
+								{
+									"key": "category",
+									"value": "example category"
+								}
+							]
+						},
+						"description": "Creates product by given id"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete product",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "0.0.0.0:8000/product?id=1e018a3a-23fc-48b9-a682-ce115a4aa64a",
+							"host": [
+								"0",
+								"0",
+								"0",
+								"0"
+							],
+							"port": "8000",
+							"path": [
+								"product"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "1e018a3a-23fc-48b9-a682-ce115a4aa64a"
+								}
+							]
+						},
+						"description": "Deletes product by given id"
+					},
+					"response": []
+				},
+				{
+					"name": "List of products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "0.0.0.0:8000/products?name=example name&category=example category",
+							"host": [
+								"0",
+								"0",
+								"0",
+								"0"
+							],
+							"port": "8000",
+							"path": [
+								"products"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "example name"
+								},
+								{
+									"key": "category",
+									"value": "example category"
+								}
+							]
+						},
+						"description": "Returns list of product by given name or/and category\nIf both of parameters are empty, returns list of all products"
+					},
+					"response": []
+				},
+				{
+					"name": "Get product",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "0.0.0.0:8000/product?id=example id",
+							"host": [
+								"0",
+								"0",
+								"0",
+								"0"
+							],
+							"port": "8000",
+							"path": [
+								"product"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "example id"
+								}
+							]
+						},
+						"description": "Return product by given id"
+					},
+					"response": []
+				},
+				{
+					"name": "Update product",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "0.0.0.0:8000/product?id=example id&name=example name",
+							"host": [
+								"0",
+								"0",
+								"0",
+								"0"
+							],
+							"port": "8000",
+							"path": [
+								"product"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "example id"
+								},
+								{
+									"key": "name",
+									"value": "example name"
+								}
+							]
+						},
+						"description": "Updates product info (name or/and category) by given id"
+					},
+					"response": []
+				}
+			],
+			"description": "Product handles",
+			"protocolProfileBehavior": {}
 		}
 	],
 	"protocolProfileBehavior": {}
