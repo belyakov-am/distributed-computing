@@ -22,11 +22,11 @@ func NewProducer(queueName string) *Producer {
 }
 
 func (producer *Producer) Produce(message *producers.Message) {
-	log.Info("Producer is trying to return message")
+	log.Info("[workers.Produce] Producer is trying to return message")
 
 	body, err := json.Marshal(message)
 	if err != nil {
-		log.WithError(err).Warning("[Producer] JSON marshal failed, message won't be returned to mq")
+		log.WithError(err).Warning("[workers.Produce] JSON marshal failure, message won't be returned to mq")
 		return
 	}
 
@@ -43,10 +43,10 @@ func (producer *Producer) Produce(message *producers.Message) {
 		queueMessage,
 	)
 
-	log.Info("Producer has (probably) returned message")
+	log.Info("[workers.Produce] Producer has returned message")
 
 	if err != nil {
-		log.WithError(err).Warning("Error occurred while returning message")
+		log.WithError(err).Warning("[workers.Produce] Error occurred while returning message")
 	}
 }
 
@@ -60,15 +60,10 @@ func (consumer *Consumer) Consume(queueMessages <-chan amqp.Delivery) *producers
 	var message producers.Message
 	err := json.Unmarshal(body, &message)
 	if err != nil {
-		log.WithError(err).Warning("[Consumer] JSON unmarshal failed, skipping message")
+		log.WithError(err).Warning("[workers.Consume] JSON unmarshal failure, skipping message")
 	}
 
-	log.WithField(
-		"consumed_from",
-		"email_queue",
-	).WithTime(
-		time.Now(),
-	).Info(message)
+	log.WithField("consumed_from", "email_queue").WithTime(time.Now()).Info(message)
 
 	return &message
 }
@@ -90,7 +85,7 @@ func NewManager(queueName string, sender *producers.Sender) *Manager {
 }
 
 func (manager *Manager) Start(cfg *config.Config) {
-	log.Print("Manager is trying to connect")
+	log.Print("[workers.Start] Manager is connecting...")
 
 	var connection *amqp.Connection
 	dialURL := makeDialURL(cfg)
@@ -110,11 +105,11 @@ func (manager *Manager) Start(cfg *config.Config) {
 }
 
 func (manager *Manager) Work(connection *amqp.Connection) {
-	log.Print("Manager is starting to work")
+	log.Print("[workers.Work] Manager is starting to work")
 
 	channel, err := connection.Channel()
 	if err != nil {
-		log.WithError(err).Fatal("Failed to get connection channel")
+		log.WithError(err).Fatal("[workers.Work] Failed to get connection channel")
 	}
 	defer func() { _ = channel.Close() }()
 
@@ -129,7 +124,7 @@ func (manager *Manager) Work(connection *amqp.Connection) {
 		nil,
 	)
 	if err != nil {
-		log.WithError(err).Fatalf("Failed to declare mq %v", manager.queueName)
+		log.WithError(err).Fatalf("[workers.Work] Failed to declare mq %v", manager.queueName)
 	}
 
 	queueMessages, err := channel.Consume(
@@ -142,10 +137,10 @@ func (manager *Manager) Work(connection *amqp.Connection) {
 		nil,
 	)
 	if err != nil {
-		log.WithError(err).Fatalf("Failed to consume from %v mq", manager.queueName)
+		log.WithError(err).Fatalf("[workers.Work] Failed to consume from %v mq", manager.queueName)
 	}
 
-	log.Print("Manager started eternity loop")
+	log.Print("[workers.Work] Manager is starting infinite loop")
 
 	for {
 		message := manager.consumer.Consume(queueMessages)
@@ -154,7 +149,7 @@ func (manager *Manager) Work(connection *amqp.Connection) {
 			manager.producer.Produce(message)
 		}
 
-		time.Sleep(time.Second / 5)
+		time.Sleep(time.Second / 1)
 	}
 }
 

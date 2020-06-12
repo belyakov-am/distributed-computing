@@ -9,26 +9,28 @@ from rest_framework_simplejwt.views import TokenVerifyView
 from rest_framework_simplejwt.exceptions import TokenError
 
 from .models import Profile
-from .serializers import RegisterSerializer
+from .serializers import RegisterSerializer, ConfirmRegistrationSerializer
 from .util import get_notification_queue, make_confirmation_message, message_queue_provider
 
 
 @api_view(["GET"])
 def confirm_registration(request):
-    token = request.query_params.get("token")
+    serializer = ConfirmRegistrationSerializer(data=request.query_params)
+    serializer.is_valid()
+    
+    token = request.query_params.get('token')
+    user_id = request.query_params.get('id')
 
     try:
-        payload = RefreshToken(token=token,).payload
+        _ = RefreshToken(token=token)
     except TokenError:
-        return Response(data={"message": "Token is invalid or expired."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(data={'message': 'Token is invalid or expired.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    id_ = int(payload["id"])
-
-    user = User.objects.get(id=id_)
+    user = User.objects.get(id=user_id)
     user.is_active = True
     user.save()
 
-    return Response(data={"message": "Email is verified, registration completed."}, status=status.HTTP_200_OK)
+    return Response(data={'message': 'Email is verified, registration completed.'}, status=status.HTTP_200_OK)
 
 
 def register_user(request, email, password):
@@ -43,6 +45,7 @@ def register_user(request, email, password):
     user.username = email
     user.email = email
     user.set_password(password)
+    user.is_active = False
 
     try:
         with transaction.atomic():
@@ -54,7 +57,7 @@ def register_user(request, email, password):
         raise ex
 
     queue = get_notification_queue("email")
-    body = make_confirmation_message(confirm_registration, RefreshToken.for_user(user))
+    body = make_confirmation_message(confirm_registration, RefreshToken.for_user(user), user.id)
 
     message_queue_provider.send_confirmation(queue, email, "Registration confirmation", body)
 
@@ -86,6 +89,12 @@ class Authorize(generics.CreateAPIView):
 
         email = serializer.validated_data.get('email')
         user = User.objects.get(email=email)
+
+        if not user.is_active:
+            return Response(
+                {'error': 'Your account is not verified yet. Check your email.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
         refresh_token = RefreshToken.for_user(user)
         return Response({'access': str(refresh_token.access_token), 'refresh': str(refresh_token)})

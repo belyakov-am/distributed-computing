@@ -22,24 +22,21 @@ type Sender struct {
 
 func (sender *Sender) Send(message *Message) (returnToQueue bool) {
 	if message.RetryCount <= 0 {
-		log.Info("Email message has reached its send retries limit")
+		log.Info("[email.Send] Email message has reached its send retries limit")
 		return false
 	}
 
 	message.RetryCount -= 1
 
-	log.WithField(
-		"retry_count",
-		fmt.Sprintf("%v->%v", message.RetryCount+1, message.RetryCount),
-	).Info("Email message `retry_count` was decreased")
+	log.WithField("retry_count", fmt.Sprintf("%v->%v", message.RetryCount+1, message.RetryCount)).Info("Email message `retry_count` was decreased")
 
 	mailMessage := newEmailMessage(sender.from, message)
 	err := sender.dialer.DialAndSend(mailMessage)
-	log.Info("email.Sender has (probably) sent email message")
+	log.Info("[email.Send] Message sent")
 
 	returnToQueue = err != nil
 	if returnToQueue {
-		log.WithError(err).Warning("Error occurred while sending")
+		log.WithError(err).Warning("[email.Send] Error occurred while sending")
 	}
 
 	return

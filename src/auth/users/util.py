@@ -55,12 +55,12 @@ def get_notification_queue(prefix):
     return "default"
 
 
-def make_confirmation_message(view, confirmation_token):
+def make_confirmation_message(view, confirmation_token, user_id):
     greeting = "<p>Hello!</p>\n"
     prefix = "<p>Please, click confirmation link below to complete your registration:</p>\n"
 
     host_and_port = "http://0.0.0.0" + ":" + os.environ.get("AUTH_PORT")
-    confirm_registration_url = host_and_port + reverse(view, **{}) + f"?token={str(confirmation_token)}"
+    confirm_registration_url = host_and_port + reverse(view, **{}) + f"?id={user_id}&token={str(confirmation_token)}"
     link = str(confirm_registration_url)
 
     print(confirm_registration_url)

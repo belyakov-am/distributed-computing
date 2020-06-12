@@ -52,7 +52,7 @@ services:
     env_file:
       - .env
     ports:
-      - $MQ_PORT:$MQ_PORT
+      - 5673:$MQ_PORT
       - $MQ_HTTP_PORT:$MQ_HTTP_PORT
 
   notifications:
