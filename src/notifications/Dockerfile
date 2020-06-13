@@ -1,4 +1,3 @@
-# build application in another container
 FROM golang:alpine AS builder
 
 WORKDIR /src/notifications
@@ -12,7 +11,6 @@ COPY . .
 RUN go build -o /notifications .
 
 
-# main container
 FROM alpine
 
 RUN    apk update                                \

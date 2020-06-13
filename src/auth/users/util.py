@@ -33,11 +33,7 @@ class MessageQueueProvider:
             }
         )
 
-        channel.basic_publish(
-            exchange="",
-            routing_key=queue,
-            body=body,
-        )
+        channel.basic_publish(exchange="", routing_key=queue, body=body)
 
         return
 
